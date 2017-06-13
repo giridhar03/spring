@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:hdp="http://www.springframework.org/schema/hadoop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+    <context:property-placeholder location="hadoop.properties,hive.properties"/>
+
+    <context:annotation-config />
+
+    <context:component-scan base-package="com.springboot.hive"/>
+
+    <hdp:configuration>
+        fs.defaultFS=${hadoop.fs}
+        yarn.resourcemanager.address=${hadoop.rm}
+        mapreduce.framework.name=yarn
+        mapreduce.jobhistory.address=${hadoop.jh}
+    </hdp:configuration>
+
+
+    <bean id="hiveDriver" class="org.apache.hive.jdbc.HiveDriver"/>
+    <bean id="hiveDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <constructor-arg name="driver" ref="hiveDriver"/>
+        <constructor-arg name="url" value="${hive.url}"/>
+    </bean>
+
+    <hdp:hive-template id="hiveTemplate"/>
+
+    <hdp:hive-client-factory id="hiveClientFactory"/>
+
+    <hdp:hive-runner id="hiveRunner" hive-client-factory-ref="hiveClientFactory" run-at-startup="true">
+        <!--<hdp:script location="hive-table.hql"/>-->
+    </hdp:hive-runner>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <constructor-arg ref="hiveDataSource"/>
+    </bean>
+
+
+
+</beans>
